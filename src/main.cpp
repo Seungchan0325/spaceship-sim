@@ -173,7 +173,6 @@ void PhysicsInit()
     bodies.push_back(spaceship);
 }
 
-
 int main() {
     const sf::Vector2u winSize{1280, 720};
     sf::RenderWindow window(sf::VideoMode(winSize), "SPACESHIP SIMULATOR");
@@ -244,7 +243,7 @@ int main() {
         ImGui::Begin("SPACESHIP SIM");
         ImGui::Checkbox("Paused", &paused);
         ImGui::SliderFloat("Time scale", &timeScale, 0.0f, 100.0f, "%.2f");
-        ImGui::SliderInt("Substeps", &substeps, 1, 10000);
+        ImGui::SliderInt("Substeps", &substeps, 1, 100);
         ImGui::Checkbox("Orbit", &drawOrbit);
         if(ImGui::BeginCombo("View", viewItems[currentView].c_str())) {
             for(int i = 0; i < viewItems.size(); i++) {
@@ -306,13 +305,15 @@ int main() {
             for(const auto& b : bodies) {
                 if (b.trail.size() < 2) continue;
 
-                sf::VertexArray strip(sf::PrimitiveType::LineStrip, b.trail.size());
+                sf::VertexArray strip(sf::PrimitiveType::LineStrip, b.trail.size() + 1);
                 const std::size_t n = b.trail.size();
                 for (std::size_t i = 0; i < n; ++i) {
                     strip[i].position = {static_cast<float>(b.trail[i].x), static_cast<float>(b.trail[i].y)};
 
                     strip[i].color = sf::Color(b.color.r, b.color.g, b.color.b, 255);
                 }
+                strip[n].position = {static_cast<float>(b.position.x), static_cast<float>(b.position.y)};
+                strip[n].color = sf::Color(b.color.r, b.color.g, b.color.b, 255);
                 window.draw(strip);
             }
         }
