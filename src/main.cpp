@@ -11,6 +11,35 @@
 
 using Vector2d = sf::Vector2<double>;
 
+const int alphabet = 256;
+
+class Body;
+
+class TrieNode {
+public:
+    Body* element;
+    TrieNode *ch[alphabet];
+    TrieNode() : element(nullptr), ch({nullptr}) {};
+    ~TrieNode() {
+        for(int i =0; i < alphabet; i++) if(ch[i]) delete ch[i];
+    }
+    void insert(const char* s, Body* e)
+    {
+        if(*s == '\0') {
+            element = e;
+            return;
+        }
+        if(ch[*s] == nullptr) ch[*s] = new TrieNode;
+        ch[*s]->insert(s+1, e);
+    }
+    Body* find(const char* s)
+    {
+        if(*s == '\0') return element;
+        if(ch[*s] == nullptr) return nullptr;
+        return ch[*s]->find(s+1);
+    }
+};
+
 class Body
 {
 public:
@@ -190,8 +219,10 @@ int main() {
 
     int currentView = 0;
     std::vector<std::string> viewItems = {"Free"};
+    TrieNode* root = new TrieNode;
     for(const auto& b : bodies) {
         viewItems.push_back(b->name);
+        root->insert(b->name.c_str(), b);
     }
 
     sf::Clock deltaClock;
@@ -293,11 +324,8 @@ int main() {
             }
         }
 
-        for(const auto& b : bodies) {
-            if(viewItems[currentView] == b->name) {
-                view.setCenter({static_cast<float>(b->position.x), static_cast<float>(b->position.y)});
-            }
-        }
+        Body* center = root->find(viewItems[currentView].c_str());
+        if(center != nullptr) view.setCenter({static_cast<float>(center->position.x), static_cast<float>(center->position.y)});
 
         window.clear(sf::Color::Black);
         window.setView(view);
