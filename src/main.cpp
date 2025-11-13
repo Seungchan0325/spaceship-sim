@@ -47,12 +47,24 @@ double G = 6.67430e-20;
 double dtFixed = 60.f;
 // double dtFixed = 0.008f;
 int substeps = 1;
-std::vector<Body> bodies;
+std::vector<Body*> bodies;
+
+Body sun;
+Body mercury;
+Body venus;
+Body earth;
+Body moon;
+Body mars;
+Body jupiter;
+Body saturn;
+Body uranus;
+Body neptune;
+Body pluto;
+Body spaceship;
 
 void PhysicsInit()
 {
     // Solar system
-    Body sun;
     sun.name = "sun";
     sun.position = Vector2d(0, 0);
     sun.velocity = Vector2d(0, 0);
@@ -60,9 +72,8 @@ void PhysicsInit()
     sun.mass = 1.989E30;
     sun.radius = 695500;
     sun.color = sf::Color(255, 215, 0, 255);
-    bodies.push_back(sun);
+    bodies.push_back(&sun);
 
-    Body mercury;
     mercury.name = "mercury";
     mercury.position = Vector2d(57.9e6, 0);
     mercury.velocity = Vector2d(0, 47.36);
@@ -70,9 +81,8 @@ void PhysicsInit()
     mercury.mass = 3.3022E23;
     mercury.radius = 2439.7;
     mercury.color = sf::Color(190, 190, 190, 255);
-    bodies.push_back(mercury);
+    bodies.push_back(&mercury);
 
-    Body venus;
     venus.name = "venus";
     venus.position = Vector2d(108.2e6, 0);
     venus.velocity = Vector2d(0, 35.02);
@@ -80,9 +90,8 @@ void PhysicsInit()
     venus.mass = 4.8690E24;
     venus.radius = 6051.8;
     venus.color = sf::Color(238, 220, 130, 255);
-    bodies.push_back(venus);
+    bodies.push_back(&venus);
 
-    Body earth;
     earth.name = "earth";
     earth.position = Vector2d(149.6e6, 0);
     earth.velocity = Vector2d(0, 29.78);
@@ -90,9 +99,8 @@ void PhysicsInit()
     earth.mass = 5.9742E24;
     earth.radius = 6378.14;
     earth.color = sf::Color(30, 144, 255, 255);
-    bodies.push_back(earth);
+    bodies.push_back(&earth);
 
-    Body moon;
     moon.name = "moon";
     moon.position = Vector2d(149.6e6 + 0.3844e6, 0);
     moon.velocity = Vector2d(0, 29.78 + 1.022);
@@ -100,9 +108,8 @@ void PhysicsInit()
     moon.mass = 7.35E22;
     moon.radius = 1738.2;
     moon.color = sf::Color(180, 180, 180, 255);
-    bodies.push_back(moon);
+    bodies.push_back(&moon);
 
-    Body mars;
     mars.name = "mars";
     mars.position = Vector2d(227.9e6, 0);
     mars.velocity = Vector2d(0, 24.07);
@@ -110,9 +117,8 @@ void PhysicsInit()
     mars.mass = 6.4191E23;
     mars.radius = 3396.2;
     mars.color = sf::Color(178, 34, 34, 255);
-    bodies.push_back(mars);
+    bodies.push_back(&mars);
 
-    Body jupiter;
     jupiter.name = "jupiter";
     jupiter.position = Vector2d(778.5e6, 0);
     jupiter.velocity = Vector2d(0, 13.07);
@@ -120,9 +126,8 @@ void PhysicsInit()
     jupiter.mass = 1.8988E27;
     jupiter.radius = 71492;
     jupiter.color = sf::Color(210, 180, 140, 255);
-    bodies.push_back(jupiter);
+    bodies.push_back(&jupiter);
 
-    Body saturn;
     saturn.name = "saturn";
     saturn.position = Vector2d(1434e6, 0);
     saturn.velocity = Vector2d(0, 9.68);
@@ -130,9 +135,8 @@ void PhysicsInit()
     saturn.mass = 5.6852E26;
     saturn.radius = 60268;
     saturn.color = sf::Color(240, 230, 140, 255);
-    bodies.push_back(saturn);
+    bodies.push_back(&saturn);
 
-    Body uranus;
     uranus.name = "uranus";
     uranus.position = Vector2d(2871e6, 0);
     uranus.velocity = Vector2d(0, 6.80);
@@ -140,9 +144,8 @@ void PhysicsInit()
     uranus.mass = 8.6840E25;
     uranus.radius = 25559;
     uranus.color = sf::Color(102, 205, 170, 255);
-    bodies.push_back(uranus);
+    bodies.push_back(&uranus);
 
-    Body neptune;
     neptune.name = "neptune";
     neptune.position = Vector2d(4495e6, 0);
     neptune.velocity = Vector2d(0, 5.43);
@@ -150,9 +153,8 @@ void PhysicsInit()
     neptune.mass = 1.0245E26;
     neptune.radius = 24764;
     neptune.color = sf::Color(0, 0, 205, 255);
-    bodies.push_back(neptune);
+    bodies.push_back(&neptune);
 
-    Body pluto;
     pluto.name = "pluto";
     pluto.position = Vector2d(5906e6, 0);
     pluto.velocity = Vector2d(0, 4.74);
@@ -160,9 +162,8 @@ void PhysicsInit()
     pluto.mass = 1.3E22;
     pluto.radius = 1195;
     pluto.color = sf::Color(194, 178, 128, 255);
-    bodies.push_back(pluto);
+    bodies.push_back(&pluto);
 
-    Body spaceship;
     spaceship.name = "spaceship";
     spaceship.position = Vector2d(earth.position.x + earth.radius + 100, 0);
     spaceship.velocity = Vector2d(0, 11.2);
@@ -170,7 +171,7 @@ void PhysicsInit()
     spaceship.mass = 1000;
     spaceship.radius = 0.001;
     spaceship.color = sf::Color::Green;
-    bodies.push_back(spaceship);
+    bodies.push_back(&spaceship);
 }
 
 int main() {
@@ -190,7 +191,7 @@ int main() {
     int currentView = 0;
     std::vector<std::string> viewItems = {"Free"};
     for(const auto& b : bodies) {
-        viewItems.push_back(b.name);
+        viewItems.push_back(b->name);
     }
 
     sf::Clock deltaClock;
@@ -265,18 +266,18 @@ int main() {
                 std::vector<Vector2d> acc(bodies.size(), {0.f, 0.f});
                 for (size_t i = 0; i < bodies.size(); ++i) {
                     for (size_t j = i + 1; j < bodies.size(); ++j) {
-                        auto aij = gravAccel(bodies[i], bodies[j], G);
-                        auto aji = gravAccel(bodies[j], bodies[i], G);
+                        auto aij = gravAccel(*bodies[i], *bodies[j], G);
+                        auto aji = gravAccel(*bodies[j], *bodies[i], G);
                         acc[i] += aij;
                         acc[j] += aji;
                     }
-                    if(bodies[i].name == "spaceship") {
-                        acc[i] += spaceship_force / bodies[i].mass;
+                    if(bodies[i]->name == "spaceship") {
+                        acc[i] += spaceship_force / bodies[i]->mass;
                     }
                 }
                 for (size_t i = 0; i < bodies.size(); ++i) {
-                    bodies[i].velocity = (bodies[i].velocity + acc[i] * step);
-                    bodies[i].position += bodies[i].velocity * step;
+                    bodies[i]->velocity = (bodies[i]->velocity + acc[i] * step);
+                    bodies[i]->position += bodies[i]->velocity * step;
                 }
             }
 
@@ -284,17 +285,17 @@ int main() {
             if(drawOrbit && sampleAccum >= sampleEvery) {
                 sampleAccum = 0.f;
                 for(auto& b : bodies) {
-                    if(b.trail.empty() || b.trail.back() != b.position) {
-                        b.trail.push_back(b.position);
-                        if(b.trail.size() > b.trailMax) b.trail.pop_front();
+                    if(b->trail.empty() || b->trail.back() != b->position) {
+                        b->trail.push_back(b->position);
+                        if(b->trail.size() > b->trailMax) b->trail.pop_front();
                     }
                 }
             }
         }
 
         for(const auto& b : bodies) {
-            if(viewItems[currentView] == b.name) {
-                view.setCenter({static_cast<float>(b.position.x), static_cast<float>(b.position.y)});
+            if(viewItems[currentView] == b->name) {
+                view.setCenter({static_cast<float>(b->position.x), static_cast<float>(b->position.y)});
             }
         }
 
@@ -303,26 +304,26 @@ int main() {
 
         if(drawOrbit) {
             for(const auto& b : bodies) {
-                if (b.trail.size() < 2) continue;
+                if (b->trail.size() < 2) continue;
 
-                sf::VertexArray strip(sf::PrimitiveType::LineStrip, b.trail.size() + 1);
-                const std::size_t n = b.trail.size();
+                sf::VertexArray strip(sf::PrimitiveType::LineStrip, b->trail.size() + 1);
+                const std::size_t n = b->trail.size();
                 for (std::size_t i = 0; i < n; ++i) {
-                    strip[i].position = {static_cast<float>(b.trail[i].x), static_cast<float>(b.trail[i].y)};
+                    strip[i].position = {static_cast<float>(b->trail[i].x), static_cast<float>(b->trail[i].y)};
 
-                    strip[i].color = sf::Color(b.color.r, b.color.g, b.color.b, 255);
+                    strip[i].color = sf::Color(b->color.r, b->color.g, b->color.b, 255);
                 }
-                strip[n].position = {static_cast<float>(b.position.x), static_cast<float>(b.position.y)};
-                strip[n].color = sf::Color(b.color.r, b.color.g, b.color.b, 255);
+                strip[n].position = {static_cast<float>(b->position.x), static_cast<float>(b->position.y)};
+                strip[n].color = sf::Color(b->color.r, b->color.g, b->color.b, 255);
                 window.draw(strip);
             }
         }
 
         for (auto& b : bodies) {
-            sf::CircleShape c(b.radius);
-            c.setOrigin({static_cast<float>(b.radius), static_cast<float>(b.radius)});
-            c.setPosition({static_cast<float>(b.position.x), static_cast<float>(b.position.y)});
-            c.setFillColor(b.color);
+            sf::CircleShape c(b->radius);
+            c.setOrigin({static_cast<float>(b->radius), static_cast<float>(b->radius)});
+            c.setPosition({static_cast<float>(b->position.x), static_cast<float>(b->position.y)});
+            c.setFillColor(b->color);
             window.draw(c);
         }
 
